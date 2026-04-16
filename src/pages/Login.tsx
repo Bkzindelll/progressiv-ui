@@ -173,14 +173,6 @@ export default function Login() {
               Voltar ao login
             </button>
           )}
-          <div>
-            <button
-              onClick={() => { setIsSignUp(!isSignUp); setResetMode(false); }}
-              className="text-xs text-primary hover:underline"
-            >
-              {isSignUp ? "Já tem conta? Entrar" : "Não tem conta? Criar"}
-            </button>
-          </div>
         </div>
       </motion.div>
     </div>
