@@ -16,28 +16,44 @@ import FilesPage from "@/pages/Files";
 import Support from "@/pages/Support";
 import AdminPanel from "@/pages/AdminPanel";
 import NotFound from "./pages/NotFound";
+import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useAuth();
-  if (loading) return null;
+  const { session, isReady } = useAuth();
+  if (!isReady) return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+    </div>
+  );
   if (!session) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
 function AdminGuard({ children }: { children: React.ReactNode }) {
-  const { role, loading } = useAuth();
-  if (loading) return null;
+  const { role, isReady } = useAuth();
+  if (!isReady) return null;
   if (role !== "admin") return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
 function RoleRedirect() {
-  const { role, loading } = useAuth();
-  if (loading) return null;
+  const { role, isReady } = useAuth();
+  if (!isReady) return null;
   if (role === "admin") return <Navigate to="/admin" replace />;
   return <Navigate to="/dashboard" replace />;
+}
+
+function LoginRedirect() {
+  const { session, isReady } = useAuth();
+  if (!isReady) return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+    </div>
+  );
+  if (session) return <RoleRedirect />;
+  return <Login />;
 }
 
 const AppRoutes = () => {
@@ -51,7 +67,7 @@ const AppRoutes = () => {
       </AnimatePresence>
       {!showLoading && (
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<LoginRedirect />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
             <Route path="/home" element={<RoleRedirect />} />
