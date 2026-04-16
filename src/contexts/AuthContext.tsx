@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -9,6 +9,7 @@ interface AuthContextType {
   user: User | null;
   role: AppRole;
   loading: boolean;
+  isReady: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   role: "client",
   loading: true,
+  isReady: false,
   signOut: async () => {},
 });
 
@@ -27,38 +29,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<AppRole>("client");
   const [loading, setLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
+  const initialized = useRef(false);
 
   const fetchRole = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (data?.role) setRole(data.role as AppRole);
+    try {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (data?.role) setRole(data.role as AppRole);
+    } catch {
+      // ignore
+    }
   };
 
   useEffect(() => {
+    // Set up listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          await fetchRole(session.user.id);
+          // Use setTimeout to avoid deadlock with Supabase internals
+          setTimeout(() => fetchRole(session.user.id), 0);
         } else {
           setRole("client");
         }
         setLoading(false);
+        setIsReady(true);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchRole(session.user.id);
-      }
-      setLoading(false);
-    });
+    // THEN restore session
+    if (!initialized.current) {
+      initialized.current = true;
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchRole(session.user.id).then(() => {
+            setLoading(false);
+            setIsReady(true);
+          });
+        } else {
+          setLoading(false);
+          setIsReady(true);
+        }
+      });
+    }
 
     return () => subscription.unsubscribe();
   }, []);
@@ -71,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, role, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, role, loading, isReady, signOut }}>
       {children}
     </AuthContext.Provider>
   );

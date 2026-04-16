@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, ArrowRight, Mail } from "lucide-react";
+import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -19,44 +19,51 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
 
-    if (resetMode) {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      setLoading(false);
-      if (error) {
-        toast({ title: "Erro", description: error.message, variant: "destructive" });
+    try {
+      if (resetMode) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) {
+          toast({ title: "Erro", description: error.message, variant: "destructive" });
+        } else {
+          toast({ title: "Email enviado", description: "Verifique sua caixa de entrada para redefinir a senha." });
+          setResetMode(false);
+        }
       } else {
-        toast({ title: "Email enviado", description: "Verifique sua caixa de entrada para redefinir a senha." });
-        setResetMode(false);
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          toast({ title: "Erro ao entrar", description: error.message, variant: "destructive" });
+        } else {
+          navigate("/home");
+        }
       }
-      return;
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      toast({ title: "Erro ao entrar", description: error.message, variant: "destructive" });
-    } else {
-      navigate("/home");
+    } catch {
+      toast({ title: "Erro inesperado", variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
 
-    if (result.error) {
+      if (result.error) {
+        toast({ title: "Erro", description: String(result.error), variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+
+      if (result.redirected) return;
+      navigate("/home");
+    } catch {
+      toast({ title: "Erro inesperado", variant: "destructive" });
       setLoading(false);
-      toast({ title: "Erro", description: String(result.error), variant: "destructive" });
-      return;
     }
-
-    if (result.redirected) return;
-
-    navigate("/home");
   };
 
   return (

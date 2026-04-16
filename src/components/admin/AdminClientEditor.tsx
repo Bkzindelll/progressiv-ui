@@ -23,12 +23,10 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
   });
   const [saving, setSaving] = useState(false);
 
-  // Timeline state
   const [steps, setSteps] = useState<TimelineStep[]>([]);
   const [updates, setUpdates] = useState<TimelineUpdate[]>([]);
   const [loadingSteps, setLoadingSteps] = useState(true);
 
-  // Files state
   const [files, setFiles] = useState<ClientFile[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -70,7 +68,6 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
     setSaving(false);
   };
 
-  // Timeline CRUD
   const addStep = async () => {
     await supabase.from("timeline_steps").insert({
       client_id: client.id,
@@ -81,8 +78,9 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
     fetchTimeline();
   };
 
-  const updateStep = async (id: string, data: Partial<TimelineStep>) => {
+  const saveStep = async (id: string, data: Partial<TimelineStep>) => {
     await supabase.from("timeline_steps").update(data as any).eq("id", id);
+    toast({ title: "Etapa salva!" });
     fetchTimeline();
   };
 
@@ -97,7 +95,6 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
     fetchTimeline();
   };
 
-  // File upload
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -112,7 +109,6 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
     }
 
     const { data: urlData } = supabase.storage.from("client-files").getPublicUrl(path);
-
     const ext = file.name.split(".").pop()?.toLowerCase() || "";
     const fileType = ["pdf"].includes(ext) ? "pdf" : ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext) ? "image" : ["doc", "docx"].includes(ext) ? "doc" : "other";
 
@@ -147,7 +143,6 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
         <p className="text-sm text-muted-foreground">Editando dados de {client.project_name || "projeto"}</p>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 rounded-xl bg-secondary p-1">
         {tabs.map((t) => (
           <button
@@ -162,17 +157,16 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
         ))}
       </div>
 
-      {/* Dashboard tab */}
       {tab === "dashboard" && (
         <div className="space-y-4">
           <div className="glass-card rounded-xl p-6 space-y-4">
             <Field label="Nome do Projeto" value={form.project_name} onChange={(v) => setForm({ ...form, project_name: v })} />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Status" value={form.status} onChange={(v) => setForm({ ...form, status: v })} />
               <NumberField label="Progresso (%)" value={form.progress} onChange={(v) => setForm({ ...form, progress: v })} max={100} />
             </div>
             <Field label="Próxima Entrega" value={form.next_delivery} onChange={(v) => setForm({ ...form, next_delivery: v })} placeholder="Ex: 22 Abr 2026" />
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <NumberField label="Leads" value={form.leads} onChange={(v) => setForm({ ...form, leads: v })} />
               <NumberField label="Conversões" value={form.conversions} onChange={(v) => setForm({ ...form, conversions: v })} />
               <NumberField label="Receita (R$)" value={form.revenue} onChange={(v) => setForm({ ...form, revenue: v })} />
@@ -185,7 +179,6 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
         </div>
       )}
 
-      {/* Timeline tab */}
       {tab === "timeline" && (
         <div className="space-y-4">
           {loadingSteps ? (
@@ -197,7 +190,7 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
                   key={step.id}
                   step={step}
                   updates={updates.filter((u) => u.step_id === step.id)}
-                  onUpdate={updateStep}
+                  onSave={saveStep}
                   onDelete={deleteStep}
                   onAddUpdate={addUpdate}
                 />
@@ -210,7 +203,6 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
         </div>
       )}
 
-      {/* Files tab */}
       {tab === "files" && (
         <div className="space-y-4">
           <label className="inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-2.5 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors cursor-pointer">
@@ -246,22 +238,32 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
   );
 }
 
-// Sub-components
-function StepEditor({ step, updates, onUpdate, onDelete, onAddUpdate }: {
+/** StepEditor uses LOCAL state — only saves on explicit "Salvar" click */
+function StepEditor({ step, updates, onSave, onDelete, onAddUpdate }: {
   step: TimelineStep;
   updates: TimelineUpdate[];
-  onUpdate: (id: string, data: Partial<TimelineStep>) => void;
+  onSave: (id: string, data: Partial<TimelineStep>) => void;
   onDelete: (id: string) => void;
   onAddUpdate: (stepId: string, desc: string) => void;
 }) {
+  const [title, setTitle] = useState(step.title);
+  const [status, setStatus] = useState(step.status);
+  const [stepDate, setStepDate] = useState(step.step_date || "");
+  const [responsible, setResponsible] = useState(step.responsible || "");
+  const [notes, setNotes] = useState(step.notes || "");
+  const [description, setDescription] = useState(step.description || "");
   const [newUpdate, setNewUpdate] = useState("");
+
+  const handleSave = () => {
+    onSave(step.id, { title, status, step_date: stepDate || null, responsible: responsible || null, notes: notes || null, description: description || null });
+  };
 
   return (
     <div className="glass-card rounded-xl p-5 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <input
-          value={step.title}
-          onChange={(e) => onUpdate(step.id, { title: e.target.value })}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           className="flex-1 bg-transparent text-sm font-semibold text-foreground focus:outline-none border-b border-transparent focus:border-primary/30 pb-0.5"
         />
         <button onClick={() => onDelete(step.id)} className="text-muted-foreground hover:text-destructive transition-colors shrink-0">
@@ -271,43 +273,34 @@ function StepEditor({ step, updates, onUpdate, onDelete, onAddUpdate }: {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <select
-          value={step.status}
-          onChange={(e) => onUpdate(step.id, { status: e.target.value })}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
           className="rounded-lg border border-border bg-secondary px-3 py-2 text-xs text-foreground"
         >
           <option value="pending">Pendente</option>
           <option value="in_progress">Em Andamento</option>
           <option value="completed">Concluído</option>
         </select>
-        <input
-          value={step.step_date || ""}
-          onChange={(e) => onUpdate(step.id, { step_date: e.target.value })}
-          placeholder="Data"
-          className="rounded-lg border border-border bg-secondary px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground"
-        />
-        <input
-          value={step.responsible || ""}
-          onChange={(e) => onUpdate(step.id, { responsible: e.target.value })}
-          placeholder="Responsável"
-          className="rounded-lg border border-border bg-secondary px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground"
-        />
-        <input
-          value={step.notes || ""}
-          onChange={(e) => onUpdate(step.id, { notes: e.target.value })}
-          placeholder="Observações"
-          className="rounded-lg border border-border bg-secondary px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground"
-        />
+        <input value={stepDate} onChange={(e) => setStepDate(e.target.value)} placeholder="Data" className="rounded-lg border border-border bg-secondary px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground" />
+        <input value={responsible} onChange={(e) => setResponsible(e.target.value)} placeholder="Responsável" className="rounded-lg border border-border bg-secondary px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground" />
+        <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Observações" className="rounded-lg border border-border bg-secondary px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground" />
       </div>
 
       <textarea
-        value={step.description || ""}
-        onChange={(e) => onUpdate(step.id, { description: e.target.value })}
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
         placeholder="Descrição da etapa..."
         className="w-full rounded-lg border border-border bg-secondary px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground resize-none"
         rows={2}
       />
 
-      {/* Updates */}
+      <button
+        onClick={handleSave}
+        className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+      >
+        <Save className="h-3.5 w-3.5" /> Salvar Etapa
+      </button>
+
       {updates.length > 0 && (
         <div className="border-t border-border pt-2 space-y-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wider">Histórico</p>
