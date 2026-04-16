@@ -11,7 +11,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const [resetMode, setResetMode] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -30,18 +29,6 @@ export default function Login() {
       } else {
         toast({ title: "Email enviado", description: "Verifique sua caixa de entrada para redefinir a senha." });
         setResetMode(false);
-      }
-      return;
-    }
-
-    if (isSignUp) {
-      const { error } = await supabase.auth.signUp({ email, password });
-      setLoading(false);
-      if (error) {
-        toast({ title: "Erro ao criar conta", description: error.message, variant: "destructive" });
-      } else {
-        toast({ title: "Conta criada!", description: "Verifique seu email para confirmar o cadastro." });
-        setIsSignUp(false);
       }
       return;
     }
@@ -86,7 +73,7 @@ export default function Login() {
           </div>
           <h1 className="text-xl font-bold text-foreground">Build Scale System</h1>
           <p className="text-sm text-muted-foreground">
-            {resetMode ? "Recupere sua senha" : isSignUp ? "Crie sua conta" : "Acesse seu painel exclusivo"}
+            {resetMode ? "Recupere sua senha" : "Acesse seu painel exclusivo"}
           </p>
         </div>
 
@@ -135,7 +122,7 @@ export default function Login() {
               <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
             ) : (
               <>
-                {resetMode ? "Enviar link" : isSignUp ? "Criar conta" : "Entrar"}
+                {resetMode ? "Enviar link" : "Entrar"}
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
