@@ -1,4 +1,5 @@
 import { LayoutDashboard, Clock, FolderOpen, MessageCircle, Users, LogOut } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -32,9 +33,7 @@ export default function AppSidebar({ isAdmin, onLogout, onNavigate }: Props) {
   return (
     <aside className="flex h-full flex-col bg-sidebar">
       <div className="flex h-16 items-center gap-3 border-b border-border px-4">
-        <div className="h-8 w-8 shrink-0 rounded-lg bg-primary flex items-center justify-center">
-          <span className="text-primary-foreground font-bold text-sm">B</span>
-        </div>
+        <img src={logo} alt="BuildScale" className="h-8 w-8 shrink-0 object-contain" />
         <span className="text-sm font-semibold text-foreground tracking-tight truncate">
           Build Scale System
         </span>

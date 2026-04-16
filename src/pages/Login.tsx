@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
+import logo from "@/assets/logo.png";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -75,9 +76,7 @@ export default function Login() {
         className="w-full max-w-sm space-y-8"
       >
         <div className="text-center space-y-3">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-xl">B</span>
-          </div>
+          <img src={logo} alt="BuildScale" className="mx-auto h-14 w-14 object-contain" />
           <h1 className="text-xl font-bold text-foreground">Build Scale System</h1>
           <p className="text-sm text-muted-foreground">
             {resetMode ? "Recupere sua senha" : "Acesse seu painel exclusivo"}
