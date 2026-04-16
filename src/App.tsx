@@ -33,6 +33,13 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function RoleRedirect() {
+  const { role, loading } = useAuth();
+  if (loading) return null;
+  if (role === "admin") return <Navigate to="/admin" replace />;
+  return <Navigate to="/dashboard" replace />;
+}
+
 const AppRoutes = () => {
   const [showLoading, setShowLoading] = useState(true);
   const handleLoadingComplete = useCallback(() => setShowLoading(false), []);
@@ -47,6 +54,7 @@ const AppRoutes = () => {
           <Route path="/" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
+            <Route path="/home" element={<RoleRedirect />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/timeline" element={<Timeline />} />
             <Route path="/files" element={<FilesPage />} />

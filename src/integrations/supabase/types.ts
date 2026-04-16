@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_data: {
+        Row: {
+          conversions: number | null
+          created_at: string
+          id: string
+          leads: number | null
+          next_delivery: string | null
+          progress: number | null
+          project_name: string | null
+          revenue: number | null
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversions?: number | null
+          created_at?: string
+          id?: string
+          leads?: number | null
+          next_delivery?: string | null
+          progress?: number | null
+          project_name?: string | null
+          revenue?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversions?: number | null
+          created_at?: string
+          id?: string
+          leads?: number | null
+          next_delivery?: string | null
+          progress?: number | null
+          project_name?: string | null
+          revenue?: number | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      client_files: {
+        Row: {
+          client_id: string
+          created_at: string
+          file_size: string | null
+          file_type: string | null
+          file_url: string
+          id: string
+          name: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          file_size?: string | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          name: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          file_size?: string | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_files_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -43,6 +123,85 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      timeline_steps: {
+        Row: {
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          notes: string | null
+          responsible: string | null
+          sort_order: number | null
+          status: string
+          step_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          responsible?: string | null
+          sort_order?: number | null
+          status?: string
+          step_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          responsible?: string | null
+          sort_order?: number | null
+          status?: string
+          step_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timeline_steps_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_data"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      timeline_updates: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          step_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          step_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          step_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timeline_updates_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "timeline_steps"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

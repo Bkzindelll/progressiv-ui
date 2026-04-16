@@ -1,17 +1,60 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Save, Users, TrendingUp, DollarSign, Percent } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { Users, Plus, ArrowLeft, Loader2 } from "lucide-react";
+import AdminClientList from "@/components/admin/AdminClientList";
+import AdminClientEditor from "@/components/admin/AdminClientEditor";
+import AdminCreateClient from "@/components/admin/AdminCreateClient";
+
+export interface AdminClient {
+  id: string;
+  user_id: string;
+  project_name: string | null;
+  status: string | null;
+  progress: number;
+  next_delivery: string | null;
+  leads: number;
+  conversions: number;
+  revenue: number;
+  updated_at: string;
+  profile?: { display_name: string | null; avatar_url: string | null };
+  email?: string;
+}
 
 export default function AdminPanel() {
-  const [progress, setProgress] = useState(68);
-  const [leads, setLeads] = useState(1248);
-  const [conversions, setConversions] = useState(187);
-  const [revenue, setRevenue] = useState(45890);
-  const [saved, setSaved] = useState(false);
+  const [clients, setClients] = useState<AdminClient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<"list" | "create" | "edit">("list");
+  const [selectedClient, setSelectedClient] = useState<AdminClient | null>(null);
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const fetchClients = useCallback(async () => {
+    setLoading(true);
+    const { data: clientRows } = await supabase.from("client_data").select("*");
+    if (!clientRows) { setLoading(false); return; }
+
+    const userIds = clientRows.map((c: any) => c.user_id);
+    const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", userIds);
+
+    const enriched: AdminClient[] = clientRows.map((c: any) => {
+      const profile = profiles?.find((p: any) => p.user_id === c.user_id);
+      return { ...c, profile: profile || undefined };
+    });
+
+    setClients(enriched);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchClients(); }, [fetchClients]);
+
+  const handleSelectClient = (client: AdminClient) => {
+    setSelectedClient(client);
+    setView("edit");
+  };
+
+  const handleBack = () => {
+    setView("list");
+    setSelectedClient(null);
+    fetchClients();
   };
 
   return (
@@ -19,57 +62,60 @@ export default function AdminPanel() {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-8"
+      className="space-y-6"
     >
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-foreground">Painel Administrativo</h1>
-        <p className="text-sm text-muted-foreground">Controle manual dos dados do cliente.</p>
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          {view === "list" && (
+            <>
+              <h1 className="text-2xl font-bold text-foreground">Painel Administrativo</h1>
+              <p className="text-sm text-muted-foreground">Gerencie todos os clientes e seus projetos.</p>
+            </>
+          )}
+          {view === "create" && (
+            <button onClick={handleBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-4 w-4" /> Voltar para lista
+            </button>
+          )}
+          {view === "edit" && (
+            <button onClick={handleBack} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-4 w-4" /> Voltar para lista
+            </button>
+          )}
+        </div>
+        {view === "list" && (
+          <button
+            onClick={() => setView("create")}
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity glow-primary"
+          >
+            <Plus className="h-4 w-4" /> Novo Cliente
+          </button>
+        )}
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <InputCard label="Progresso (%)" icon={Percent} value={progress} onChange={setProgress} max={100} />
-        <InputCard label="Leads" icon={Users} value={leads} onChange={setLeads} />
-        <InputCard label="Conversões" icon={TrendingUp} value={conversions} onChange={setConversions} />
-        <InputCard label="Receita (R$)" icon={DollarSign} value={revenue} onChange={setRevenue} />
-      </div>
-
-      <button
-        onClick={handleSave}
-        className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity glow-primary"
-      >
-        <Save className="h-4 w-4" />
-        {saved ? "Salvo ✓" : "Salvar Alterações"}
-      </button>
+      {loading && view === "list" ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      ) : (
+        <AnimatePresence mode="wait">
+          {view === "list" && (
+            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <AdminClientList clients={clients} onSelect={handleSelectClient} />
+            </motion.div>
+          )}
+          {view === "create" && (
+            <motion.div key="create" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <AdminCreateClient onCreated={handleBack} />
+            </motion.div>
+          )}
+          {view === "edit" && selectedClient && (
+            <motion.div key="edit" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <AdminClientEditor client={selectedClient} onUpdated={fetchClients} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
     </motion.div>
-  );
-}
-
-function InputCard({
-  label,
-  icon: Icon,
-  value,
-  onChange,
-  max,
-}: {
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  value: number;
-  onChange: (v: number) => void;
-  max?: number;
-}) {
-  return (
-    <div className="glass-card rounded-xl p-5 space-y-3">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Icon className="h-4 w-4 text-primary" />
-        {label}
-      </div>
-      <input
-        type="number"
-        value={value}
-        max={max}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full rounded-lg border border-border bg-secondary px-4 py-3 text-lg font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
-      />
-    </div>
   );
 }

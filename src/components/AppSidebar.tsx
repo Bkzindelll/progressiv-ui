@@ -1,4 +1,4 @@
-import { LayoutDashboard, Clock, FolderOpen, MessageCircle, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Clock, FolderOpen, MessageCircle, Users, LogOut } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,7 @@ const clientNav = [
 ];
 
 const adminNav = [
-  { label: "Painel Admin", icon: Settings, path: "/admin" },
+  { label: "Clientes", icon: Users, path: "/admin" },
 ];
 
 interface Props {
@@ -22,7 +22,8 @@ interface Props {
 export default function AppSidebar({ isAdmin, onLogout, collapsed }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
-  const items = isAdmin ? [...clientNav, ...adminNav] : clientNav;
+  // Admin sees only admin nav, client sees only client nav
+  const items = isAdmin ? adminNav : clientNav;
 
   return (
     <aside
