@@ -51,7 +51,7 @@ export default function Login() {
     if (error) {
       toast({ title: "Erro ao entrar", description: error.message, variant: "destructive" });
     } else {
-      navigate("/dashboard");
+      navigate("/home");
     }
   };
 
@@ -69,7 +69,7 @@ export default function Login() {
 
     if (result.redirected) return;
 
-    navigate("/dashboard");
+    navigate("/home");
   };
 
   return (
