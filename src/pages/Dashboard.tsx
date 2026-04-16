@@ -1,77 +1,75 @@
 import { motion } from "framer-motion";
-import { Users, TrendingUp, DollarSign, Activity, CalendarDays, Zap } from "lucide-react";
+import { Users, TrendingUp, DollarSign, Activity, CalendarDays, Zap, Loader2 } from "lucide-react";
 import ProgressBar from "@/components/ProgressBar";
 import MetricCard from "@/components/MetricCard";
-import { clientData } from "@/lib/mockData";
+import { useMyClientData } from "@/hooks/useClientData";
+import { useAuth } from "@/contexts/AuthContext";
 
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.1 } },
-};
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
+const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const { data, loading } = useMyClientData();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const displayName = data?.project_name ? data.project_name : "seu projeto";
+
   return (
     <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-8">
-      {/* Header */}
       <motion.div variants={fadeUp} className="space-y-1">
         <h1 className="text-2xl font-bold text-foreground">
-          Olá, {clientData.name} 👋
+          Olá, {user?.user_metadata?.full_name || user?.email?.split("@")[0]} 👋
         </h1>
         <p className="text-muted-foreground text-sm">
           Acompanhe a evolução do seu projeto em tempo real.
         </p>
       </motion.div>
 
-      {/* Project Status Card */}
       <motion.div variants={fadeUp} className="glass-card rounded-xl p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Projeto Ativo</p>
-            <h2 className="text-lg font-semibold text-foreground">{clientData.project}</h2>
+            <h2 className="text-lg font-semibold text-foreground">{data?.project_name || "Aguardando configuração"}</h2>
           </div>
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-sm text-primary font-medium">{clientData.status}</span>
+            <span className="text-sm text-primary font-medium">{data?.status || "Não iniciado"}</span>
           </div>
         </div>
 
-        <ProgressBar value={clientData.progress} />
+        <ProgressBar value={data?.progress || 0} />
 
         <div className="flex flex-col sm:flex-row gap-4 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <CalendarDays className="h-4 w-4" />
-            <span>Próxima entrega: <span className="text-foreground font-medium">{clientData.nextDelivery}</span></span>
-          </div>
+          {data?.next_delivery && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <CalendarDays className="h-4 w-4" />
+              <span>Próxima entrega: <span className="text-foreground font-medium">{data.next_delivery}</span></span>
+            </div>
+          )}
           <div className="flex items-center gap-2 text-muted-foreground">
             <Activity className="h-4 w-4" />
-            <span>{clientData.lastUpdate}</span>
+            <span>Atualizado: {data?.updated_at ? new Date(data.updated_at).toLocaleDateString("pt-BR") : "—"}</span>
           </div>
-        </div>
-
-        <div className="rounded-lg bg-primary/5 border border-primary/10 px-4 py-3 flex items-center gap-3">
-          <Zap className="h-4 w-4 text-primary shrink-0" />
-          <p className="text-sm text-foreground">
-            Execução em andamento — Nova etapa liberada
-          </p>
         </div>
       </motion.div>
 
-      {/* Metrics */}
       <motion.div variants={fadeUp}>
         <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Métricas do Projeto</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <MetricCard label="Leads" value={clientData.metrics.leads} icon={Users} trend="+12% esta semana" />
-          <MetricCard label="Conversões" value={clientData.metrics.conversions} icon={TrendingUp} trend="+8% esta semana" />
-          <MetricCard label="Receita" value={clientData.metrics.revenue} prefix="R$ " icon={DollarSign} trend="+18% este mês" />
+          <MetricCard label="Leads" value={data?.leads || 0} icon={Users} />
+          <MetricCard label="Conversões" value={data?.conversions || 0} icon={TrendingUp} />
+          <MetricCard label="Receita" value={data?.revenue || 0} prefix="R$ " icon={DollarSign} />
         </div>
       </motion.div>
 
-      {/* Footer message */}
       <motion.p variants={fadeUp} className="text-xs text-muted-foreground text-center pt-4">
         Seu sistema está sendo construído com dedicação total.
       </motion.p>
