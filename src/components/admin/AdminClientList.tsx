@@ -18,8 +18,9 @@ export default function AdminClientList({ clients, onSelect }: Props) {
 
   return (
     <div className="glass-card rounded-xl overflow-hidden">
-      <div className="hidden sm:grid grid-cols-[1fr_1fr_100px_120px] gap-4 px-5 py-3 border-b border-border text-xs text-muted-foreground uppercase tracking-wider">
+      <div className="hidden sm:grid grid-cols-[1fr_1fr_1fr_100px_120px] gap-4 px-5 py-3 border-b border-border text-xs text-muted-foreground uppercase tracking-wider">
         <span>Cliente</span>
+        <span>Email</span>
         <span>Projeto</span>
         <span>Progresso</span>
         <span>Status</span>
@@ -28,11 +29,12 @@ export default function AdminClientList({ clients, onSelect }: Props) {
         <button
           key={client.id}
           onClick={() => onSelect(client)}
-          className="w-full grid grid-cols-1 sm:grid-cols-[1fr_1fr_100px_120px] gap-2 sm:gap-4 items-center px-5 py-4 border-b border-border last:border-0 hover:bg-secondary/50 transition-colors text-left"
+          className="w-full grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_100px_120px] gap-2 sm:gap-4 items-center px-5 py-4 border-b border-border last:border-0 hover:bg-secondary/50 transition-colors text-left"
         >
           <div>
             <p className="text-sm font-medium text-foreground">{client.profile?.display_name || "Sem nome"}</p>
           </div>
+          <p className="text-sm text-muted-foreground truncate">{client.email || "—"}</p>
           <p className="text-sm text-muted-foreground truncate">{client.project_name || "—"}</p>
           <div className="flex items-center gap-2">
             <div className="h-1.5 w-16 rounded-full bg-secondary overflow-hidden">

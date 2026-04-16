@@ -29,18 +29,12 @@ export default function AdminPanel() {
 
   const fetchClients = useCallback(async () => {
     setLoading(true);
-    const { data: clientRows } = await supabase.from("client_data").select("*");
-    if (!clientRows) { setLoading(false); return; }
-
-    const userIds = clientRows.map((c: any) => c.user_id);
-    const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", userIds);
-
-    const enriched: AdminClient[] = clientRows.map((c: any) => {
-      const profile = profiles?.find((p: any) => p.user_id === c.user_id);
-      return { ...c, profile: profile || undefined };
-    });
-
-    setClients(enriched);
+    const { data, error } = await supabase.functions.invoke("admin-list-clients");
+    if (error || !data) {
+      setLoading(false);
+      return;
+    }
+    setClients(Array.isArray(data) ? data : []);
     setLoading(false);
   }, []);
 
