@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import logo from "@/assets/logo.png";
 
 const messages = [
   "Carregando seu sistema…",
@@ -44,9 +45,7 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
         className="flex flex-col items-center gap-8"
       >
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">B</span>
-          </div>
+          <img src={logo} alt="BuildScale" className="h-10 w-10 object-contain" />
           <span className="text-xl font-semibold text-foreground tracking-tight">
             Build Scale System
           </span>
