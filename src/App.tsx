@@ -54,6 +54,7 @@ const AppRoutes = () => {
           <Route path="/" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
+            <Route path="/home" element={<RoleRedirect />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/timeline" element={<Timeline />} />
             <Route path="/files" element={<FilesPage />} />
