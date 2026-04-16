@@ -1,18 +1,12 @@
 import { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import AppSidebar from "@/components/AppSidebar";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AppLayout() {
-  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const role = localStorage.getItem("bss_role") || "client";
-
-  const handleLogout = () => {
-    localStorage.removeItem("bss_auth");
-    localStorage.removeItem("bss_role");
-    navigate("/");
-  };
+  const { role, signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
@@ -31,7 +25,7 @@ export default function AppLayout() {
 
       {/* Sidebar */}
       <div className={`${mobileOpen ? "translate-x-0" : "-translate-x-full"} sm:translate-x-0 transition-transform duration-300 z-50`}>
-        <AppSidebar isAdmin={role === "admin"} onLogout={handleLogout} />
+        <AppSidebar isAdmin={role === "admin"} onLogout={signOut} />
       </div>
 
       {/* Main content */}
