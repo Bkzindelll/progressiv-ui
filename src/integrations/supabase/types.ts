@@ -18,12 +18,14 @@ export type Database = {
         Row: {
           conversions: number | null
           created_at: string
+          end_date: string | null
           id: string
           leads: number | null
           next_delivery: string | null
           progress: number | null
           project_name: string | null
           revenue: number | null
+          start_date: string | null
           status: string | null
           updated_at: string
           user_id: string
@@ -31,12 +33,14 @@ export type Database = {
         Insert: {
           conversions?: number | null
           created_at?: string
+          end_date?: string | null
           id?: string
           leads?: number | null
           next_delivery?: string | null
           progress?: number | null
           project_name?: string | null
           revenue?: number | null
+          start_date?: string | null
           status?: string | null
           updated_at?: string
           user_id: string
@@ -44,12 +48,14 @@ export type Database = {
         Update: {
           conversions?: number | null
           created_at?: string
+          end_date?: string | null
           id?: string
           leads?: number | null
           next_delivery?: string | null
           progress?: number | null
           project_name?: string | null
           revenue?: number | null
+          start_date?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string
@@ -126,6 +132,7 @@ export type Database = {
       }
       timeline_steps: {
         Row: {
+          client_feedback: string | null
           client_id: string
           created_at: string
           description: string | null
@@ -139,6 +146,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          client_feedback?: string | null
           client_id: string
           created_at?: string
           description?: string | null
@@ -152,6 +160,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          client_feedback?: string | null
           client_id?: string
           created_at?: string
           description?: string | null
