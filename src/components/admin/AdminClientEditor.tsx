@@ -17,6 +17,8 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
     status: client.status || "Não iniciado",
     progress: client.progress,
     next_delivery: client.next_delivery || "",
+    start_date: client.start_date || "",
+    end_date: client.end_date || "",
     leads: client.leads,
     conversions: client.conversions,
     revenue: client.revenue,
@@ -58,6 +60,8 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
       status: form.status,
       progress: form.progress,
       next_delivery: form.next_delivery,
+      start_date: form.start_date || null,
+      end_date: form.end_date || null,
       leads: form.leads,
       conversions: form.conversions,
       revenue: form.revenue,
@@ -166,6 +170,10 @@ export default function AdminClientEditor({ client, onUpdated }: Props) {
               <NumberField label="Progresso (%)" value={form.progress} onChange={(v) => setForm({ ...form, progress: v })} max={100} />
             </div>
             <Field label="Próxima Entrega" value={form.next_delivery} onChange={(v) => setForm({ ...form, next_delivery: v })} placeholder="Ex: 22 Abr 2026" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <DateField label="Data de Início" value={form.start_date} onChange={(v) => setForm({ ...form, start_date: v })} />
+              <DateField label="Data de Término" value={form.end_date} onChange={(v) => setForm({ ...form, end_date: v })} />
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <NumberField label="Leads" value={form.leads} onChange={(v) => setForm({ ...form, leads: v })} />
               <NumberField label="Conversões" value={form.conversions} onChange={(v) => setForm({ ...form, conversions: v })} />
@@ -279,6 +287,7 @@ function StepEditor({ step, updates, onSave, onDelete, onAddUpdate }: {
         >
           <option value="pending">Pendente</option>
           <option value="in_progress">Em Andamento</option>
+          <option value="awaiting_approval">Esperar Aprovação</option>
           <option value="completed">Concluído</option>
         </select>
         <input value={stepDate} onChange={(e) => setStepDate(e.target.value)} placeholder="Data" className="rounded-lg border border-border bg-secondary px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground" />
@@ -294,6 +303,12 @@ function StepEditor({ step, updates, onSave, onDelete, onAddUpdate }: {
         rows={2}
       />
 
+      {step.client_feedback && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-1">
+          <p className="text-xs font-semibold text-primary uppercase tracking-wider">💬 Feedback do Cliente</p>
+          <p className="text-xs text-foreground">{step.client_feedback}</p>
+        </div>
+      )}
       <button
         onClick={handleSave}
         className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
@@ -359,6 +374,22 @@ function NumberField({ label, value, onChange, max }: {
         max={max}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full rounded-lg border border-border bg-secondary px-4 py-3 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
+      />
+    </div>
+  );
+}
+
+function DateField({ label, value, onChange }: {
+  label: string; value: string; onChange: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-sm text-muted-foreground">{label}</label>
+      <input
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
       />
     </div>
   );

@@ -9,6 +9,8 @@ export interface ClientData {
   status: string | null;
   progress: number;
   next_delivery: string | null;
+  start_date: string | null;
+  end_date: string | null;
   leads: number;
   conversions: number;
   revenue: number;
@@ -24,6 +26,7 @@ export interface TimelineStep {
   step_date: string | null;
   responsible: string | null;
   notes: string | null;
+  client_feedback: string | null;
   sort_order: number;
 }
 
@@ -82,8 +85,9 @@ export function useMyTimeline(clientId: string | undefined) {
   const [updates, setUpdates] = useState<TimelineUpdate[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchData = () => {
     if (!clientId) { setLoading(false); return; }
+    setLoading(true);
     Promise.all([
       supabase.from("timeline_steps").select("*").eq("client_id", clientId).order("sort_order"),
       supabase.from("timeline_updates").select("*"),
@@ -92,9 +96,11 @@ export function useMyTimeline(clientId: string | undefined) {
       setUpdates((updatesRes.data || []) as TimelineUpdate[]);
       setLoading(false);
     });
-  }, [clientId]);
+  };
 
-  return { steps, updates, loading };
+  useEffect(() => { fetchData(); }, [clientId]);
+
+  return { steps, updates, loading, refetch: fetchData };
 }
 
 export function useMyFiles(clientId: string | undefined) {

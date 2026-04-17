@@ -13,6 +13,8 @@ export interface AdminClient {
   status: string | null;
   progress: number;
   next_delivery: string | null;
+  start_date: string | null;
+  end_date: string | null;
   leads: number;
   conversions: number;
   revenue: number;

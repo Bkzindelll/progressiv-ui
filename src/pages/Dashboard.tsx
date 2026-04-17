@@ -3,6 +3,7 @@ import { Users, TrendingUp, DollarSign, Activity, CalendarDays, Loader2, Clock }
 import ProgressBar from "@/components/ProgressBar";
 import MetricCard from "@/components/MetricCard";
 import AnimatedCounter from "@/components/AnimatedCounter";
+import CountdownTimer from "@/components/CountdownTimer";
 import { useMyClientData, useRecentActivity } from "@/hooks/useClientData";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -73,6 +74,13 @@ export default function Dashboard() {
           </div>
         </div>
       </motion.div>
+
+      {/* Countdown Timer */}
+      {data?.end_date && (
+        <motion.div variants={fadeUp}>
+          <CountdownTimer startDate={data.start_date} endDate={data.end_date} />
+        </motion.div>
+      )}
 
       {/* Metrics */}
       <motion.div variants={fadeUp}>
