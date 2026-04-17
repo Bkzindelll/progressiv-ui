@@ -75,6 +75,13 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
+      {/* Countdown Timer */}
+      {data?.end_date && (
+        <motion.div variants={fadeUp}>
+          <CountdownTimer startDate={data.start_date} endDate={data.end_date} />
+        </motion.div>
+      )}
+
       {/* Metrics */}
       <motion.div variants={fadeUp}>
         <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Métricas do Projeto</p>
