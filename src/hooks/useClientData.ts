@@ -9,6 +9,8 @@ export interface ClientData {
   status: string | null;
   progress: number;
   next_delivery: string | null;
+  start_date: string | null;
+  end_date: string | null;
   leads: number;
   conversions: number;
   revenue: number;
@@ -24,6 +26,7 @@ export interface TimelineStep {
   step_date: string | null;
   responsible: string | null;
   notes: string | null;
+  client_feedback: string | null;
   sort_order: number;
 }
 
