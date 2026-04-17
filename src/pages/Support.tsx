@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { MessageCircle, Headphones, Clock } from "lucide-react";
 
 export default function Support() {
-  const whatsappUrl = "https://wa.me/5511999999999?text=Olá!%20Preciso%20de%20suporte%20sobre%20meu%20projeto.";
+  const whatsappUrl = "http://wa.me/5515988326051";
 
   return (
     <motion.div
@@ -26,7 +26,7 @@ export default function Support() {
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-3 rounded-xl bg-primary px-6 sm:px-8 py-4 text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-95 transition-all glow-primary min-h-[48px]"
+        className="inline-flex items-center gap-3 rounded-xl bg-primary px-6 sm:px-8 py-4 text-primary-foreground font-semibold text-sm hover:opacity-90 active:scale-95 transition-all shadow-lg hover:shadow-primary/30 min-h-[48px]"
       >
         <MessageCircle className="h-5 w-5" />
         Falar com a equipe no WhatsApp
@@ -37,12 +37,12 @@ export default function Support() {
         <span>Tempo médio de resposta: 15 minutos</span>
       </div>
 
-      {/* Floating WhatsApp button - mobile only */}
+      {/* Floating WhatsApp button - always visible on mobile/tablet */}
       <a
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-lg shadow-green-500/30 active:scale-95 transition-transform sm:hidden"
+        className="fixed bottom-6 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-lg shadow-green-500/30 active:scale-95 transition-transform hover:scale-105"
         aria-label="WhatsApp"
       >
         <MessageCircle className="h-6 w-6" />
